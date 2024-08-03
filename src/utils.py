@@ -16,23 +16,35 @@ def load_json(file_path):
     return dict(data)
 
 class DotaTokenizer:
+
+    '''
+    self.simple_vocab (Dict): a vocabulary containing the special tokens provided by the user and int: name pairs.
+    self.pickban_vocab (Dict): a vocabulary containing the special tokens provided by the user, but which has
+                               double the amount of tokens per hero, one for when the hero was picked, and one for
+                               when the hero was banned (e.g. n: [PICK_techies], n+1: [BAN_techies]).
+    '''
+
     def __init__(self, metadata: dict, special_tks: list):
         self.simple_vocab = self.get_vocab(metadata, special_tks, alt_vocab=False)
         self.pickban_vocab = self.get_vocab(metadata, special_tks, alt_vocab=True)
+        self.simple_ttoi = {(v, k) for k, v in self.simple_vocab.items()}
+        self.alt_ttoi = {(v, k) for k, v in self.pickban_vocab.items()}
     
-    def encode(self, match, alt: bool) -> str:
-        ''' 
-        Encodes the pick/bans in the match according to the desired tokenization method.
-        '''
+    def encode(self, match: str, alt: bool) -> list:
         if not alt:
-            pass
+            match = [self.simple_ttoi[token] for token in match]
         else:
-            pass
+            match = [self.alt_ttoi[token] for token in match]
         
-        return None
+        return match
 
-    def decode(self, alt: bool) -> str:
-        pass
+    def decode(self, match: list, alt: bool) -> list:
+        if not alt:
+            match = [self.simple_vocab[tok_idx] for tok_idx in match]
+        else:
+            match = [self.pickban_vocab[tok_idx] for tok_idx in match]
+        
+        return match
 
     def get_vocab(self, metadata: dict, special_tks: list, alt_vocab: bool) -> dict:
         
