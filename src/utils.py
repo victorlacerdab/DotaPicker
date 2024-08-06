@@ -27,8 +27,8 @@ class DotaTokenizer:
     def __init__(self, metadata: dict, special_tks: list):
         self.simple_vocab = self.get_vocab(metadata, special_tks, alt_vocab=False)
         self.pickban_vocab = self.get_vocab(metadata, special_tks, alt_vocab=True)
-        self.simple_ttoi = {(v, k) for k, v in self.simple_vocab.items()}
-        self.alt_ttoi = {(v, k) for k, v in self.pickban_vocab.items()}
+        self.simple_ttoi = {v: k for k, v in self.simple_vocab.items()}
+        self.alt_ttoi = {v: k for k, v in self.pickban_vocab.items()}
     
     def encode(self, match: str, alt: bool) -> list:
         if not alt:
