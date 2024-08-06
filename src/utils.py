@@ -1,6 +1,8 @@
 import json
 import pandas as pd
+import torch
 from pandas import DataFrame
+from torch.utils.data import DataLoader, Dataset
 
 def match_picks_cleaner(dframe: DataFrame) -> DataFrame:
     dframe = dframe[['is_pick', 'hero_id', 'team', 'order', 'match_id']]
@@ -50,21 +52,35 @@ class DotaTokenizer:
         
         vocab = {}
         idx_to_ignore = len('npc_dota_hero_')
-        counter = len(special_tks)
-
-        for i, tk in enumerate(special_tks):
-            vocab.update({i: tk})
+        counter = 0
 
         for k,v in metadata.items():
             v = v['name'][idx_to_ignore:]
             if not alt_vocab:
-                vocab.update({int(k) + len(special_tks): v})
+                vocab.update({int(k): v})
             else:
                 vocab.update({counter: f'[PICK_{v}]'})
                 counter += 1
                 vocab.update({counter: f'[BAN_{v}]'})
                 counter += 1
 
+        if not alt_vocab:
+            for i, tk in enumerate(special_tks):
+                vocab.update({i+len(metadata.items()): tk})
+        else:
+            for i, tk in enumerate(special_tks):
+                vocab.update({i+counter: tk})
+                counter += 1
+
         return vocab
 
-            
+
+class Dotaset(Dataset):
+    def __init__(self, samples):
+        self.samples = torch.tensor(samples, dtype=torch.long)
+    
+    def __len__(self):
+        return len(self.samples)
+    
+    def __getitem__(self, idx):
+        return self.samples[idx]

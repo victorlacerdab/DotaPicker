@@ -2,3 +2,7 @@
 __pycache__/utils.cpython-312.pyc
 src/__pycache__/utils.cpython-312.pyc
 src/__pycache__/utils.cpython-311.pyc
+data/processeddota_matches.json
+data/processed/dota_test.pt
+data/processed/dota_val.pt
+data/processed/dota_train.pt
