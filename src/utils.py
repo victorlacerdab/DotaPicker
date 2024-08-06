@@ -1,6 +1,8 @@
 import json
 import pandas as pd
 import torch
+import matplotlib.pyplot as plt
+import os
 from pandas import DataFrame
 from torch.utils.data import DataLoader, Dataset
 
@@ -11,6 +13,13 @@ def match_picks_cleaner(dframe: DataFrame) -> DataFrame:
 def match_results_cleaner(dframe: DataFrame) -> DataFrame:
     dframe = dframe[['match_id', 'radiant_win']]
     return dframe
+
+def load_data(path: str, fnames: list[str], batch_size: int) -> DataLoader:
+    train_dloader = DataLoader(torch.load(os.path.join(path, fnames[0])), shuffle=True, batch_size=batch_size)
+    val_dloader = DataLoader(torch.load(os.path.join(path, fnames[1])), shuffle=False, batch_size=batch_size)
+    test_dloader = DataLoader(torch.load(os.path.join(path, fnames[2])), shuffle=False, batch_size=batch_size)
+    
+    return train_dloader, val_dloader, test_dloader
 
 def load_json(file_path):
     with open(file_path, 'r') as file:
@@ -84,3 +93,16 @@ class Dotaset(Dataset):
     
     def __getitem__(self, idx):
         return self.samples[idx]
+    
+def plot_losses(train_losses, val_losses):
+    epochs = range(1, len(train_losses) + 1)
+    
+    plt.figure(figsize=(10, 5))
+    plt.plot(epochs, train_losses, 'b', label='Training Loss')
+    plt.plot(epochs, val_losses, 'r', label='Validation Loss')
+    plt.title('Training and Validation Loss per Epoch')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+    plt.show()

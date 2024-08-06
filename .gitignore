@@ -6,3 +6,4 @@ data/processeddota_matches.json
 data/processed/dota_test.pt
 data/processed/dota_val.pt
 data/processed/dota_train.pt
+src/__pycache__/heropicker.cpython-311.pyc
