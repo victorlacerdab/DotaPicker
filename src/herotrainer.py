@@ -20,17 +20,17 @@ dset_specs = load_json(os.path.join(data_dir, specnames[0]))
 print(dset_specs)
 VOCAB_LEN = dset_specs['simple_vocab_len'] + 15
 
-config_dict = {'emb_dim': 512,
-               'dropout': 0.5,
+config_dict = {'emb_dim': 1024,
+               'dropout': 0.1,
                'vocab_len': VOCAB_LEN,
-               'num_heads': 4,
-               'num_dec_layers': 4,
-               'dim_ff': 1024,
+               'num_heads': 8,
+               'num_dec_layers': 8,
+               'dim_ff': 2048,
                'epochs': 5000,
-               'lr': 0.000001
+               'lr': 0.0000001
                }
 
-BATCH_SIZE = 2048
+BATCH_SIZE = 1024
 train_dloader, val_dloader, test_dloader = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
 
 def train_causal(traindloader, valdloader, config_dict, device):
@@ -47,6 +47,9 @@ def train_causal(traindloader, valdloader, config_dict, device):
 
     train_losses = []
     val_losses = []
+    best_val_loss = float('inf')
+    early_stop_counter = 0 
+    patience = 3  
 
     model = model.to(device)
 
@@ -101,8 +104,20 @@ def train_causal(traindloader, valdloader, config_dict, device):
         avg_val_loss = total_val_loss / len(valdloader)
         val_losses.append(avg_val_loss)
 
+        # Check if validation loss has increased
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            early_stop_counter = 0  # Reset the counter if validation loss improves
+        else:
+            early_stop_counter += 1  # Increment the counter if validation loss worsens
+        
+        # Early stopping condition
+        if early_stop_counter >= patience:
+            print(f"Validation loss increased for {patience} consecutive epochs. Stopping training.")
+            torch.save(model, os.path.join(model_dir, f'heropicker_earlystop_{epoch+1}epcs.pt'))
+            break
+
         if (epoch+1) % 50 == 0:
-            #torch.save(model, os.path.join(model_dir, f'heropicker_{epoch}epcs.pt'))
             print(f"Epoch {epoch + 1}/{epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
 
     print('Saving final model.')
