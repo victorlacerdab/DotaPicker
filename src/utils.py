@@ -36,7 +36,7 @@ class DotaTokenizer:
     '''
 
     def __init__(self, metadata: dict, special_tks: list):
-        self.simple_vocab = self.get_vocab(metadata, special_tks, alt_vocab=False)
+        self.simple_vocab = self.get_vocab(metadata, special_tks, alt_vocab=False) # Important: use the simple_vocab, alt_vocab is deprecated
         self.pickban_vocab = self.get_vocab(metadata, special_tks, alt_vocab=True)
         self.simple_ttoi = {v: k for k, v in self.simple_vocab.items()}
         self.alt_ttoi = {v: k for k, v in self.pickban_vocab.items()}
@@ -66,19 +66,20 @@ class DotaTokenizer:
         for k,v in metadata.items():
             v = v['name'][idx_to_ignore:]
             if not alt_vocab:
-                vocab.update({int(k): v})
+                vocab.update({int(k)-1: v})
             else:
                 vocab.update({counter: f'[PICK_{v}]'})
                 counter += 1
                 vocab.update({counter: f'[BAN_{v}]'})
                 counter += 1
-
+        
         if not alt_vocab:
+            max_idx = max([k for k in vocab.keys()]) # Important: certain heroes are missing from the hero_metadata.json. Some keys have no corresponding heros.
             for i, tk in enumerate(special_tks):
-                vocab.update({i+len(metadata.items()): tk})
+                vocab.update({i+max_idx+1: tk})
         else:
             for i, tk in enumerate(special_tks):
-                vocab.update({i+counter: tk})
+                vocab.update({i+counter: tk}) 
                 counter += 1
 
         return vocab
@@ -97,7 +98,7 @@ class Dotaset(Dataset):
 def plot_losses(train_losses, val_losses):
     epochs = range(1, len(train_losses) + 1)
     
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(8, 4))
     plt.plot(epochs, train_losses, 'b', label='Training Loss')
     plt.plot(epochs, val_losses, 'r', label='Validation Loss')
     plt.title('Training and Validation Loss per Epoch')

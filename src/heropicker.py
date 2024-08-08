@@ -2,6 +2,7 @@ import torch
 import math
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.modules.transformer import _generate_square_subsequent_mask
 
 class HeroPicker(nn.Module):
     def __init__(self, vocab_len, emb_dim,
@@ -10,24 +11,21 @@ class HeroPicker(nn.Module):
         super(HeroPicker, self).__init__()
         self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=emb_dim)
         self.pos_enc = PositionalEncoding(emb_dim=emb_dim, max_len=25)
-        self.decoder_layer = nn.TransformerDecoderLayer(d_model=emb_dim, nhead=num_heads,
+        self.decoder_layer = nn.TransformerEncoderLayer(d_model=emb_dim, nhead=num_heads,
                                                         dim_feedforward=dim_ff, batch_first=True,
                                                         dropout=dropout_rate)
-        self.decoder = nn.TransformerDecoder(self.decoder_layer, num_layers=num_decod_layers)
+        self.decoder = nn.TransformerEncoder(self.decoder_layer, num_layers=num_decod_layers)
         self.fc = nn.Linear(emb_dim, vocab_len)
         self.device = device
-
-    def generate_square_subsequent_mask(self, size):
-        mask = (torch.triu(torch.ones(size, size), diagonal=1)).bool().to(self.device)
-        return mask
 
     def forward(self, x):
         out = self.emb_layer(x)
         out = self.pos_enc(out)
-        mask = self.generate_square_subsequent_mask(out.size(1))
-        out = self.decoder(tgt=out, memory=out, tgt_mask = mask, tgt_is_causal=True)
+        mask = _generate_square_subsequent_mask(sz = out.size(1)).to(self.device) # Out shape = [batch_size, seq_len, emb_dim]
+        out = self.decoder(src=out, mask=mask, is_causal=True)
         out = self.fc(out)
-        return out    
+
+        return out
 
 class PositionalEncoding(nn.Module):
     def __init__(self, emb_dim: int, max_len: int):
