@@ -1,4 +1,5 @@
 /.DS_Store
+.gitignore
 __pycache__/utils.cpython-312.pyc
 src/__pycache__/utils.cpython-312.pyc
 src/__pycache__/utils.cpython-311.pyc
