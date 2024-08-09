@@ -4,10 +4,15 @@ Dota 2 is a popular Moba where two teams of 5 players face each other by drawing
 
 HeroPicker is a decoder-only Transformers model designed to answer the following question: *Given a list of hero picks/hero bans, which hero would a pro player choose to ban/pick next?*
 
-We cast the question as a next-token prediction problem using masked self-attention, where each hero is represented as a token in a vocabulary
+We cast the question as a next-token prediction problem using masked self-attention, where each hero is represented as a token in a vocabulary.
+
+<p align="center">
+  <img src="heropicker.png" alt="Heropicker.">
+  <br>
+  <b>The problem lends itself to being a next token prediction problem.</b>
+</p>
 
 Just for fun, the model also tries to predict which team (Radiant or Dire) won the match just by looking at the final picks and bans.
-
 
 # The data
 
