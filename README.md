@@ -29,7 +29,7 @@ We adopt a 70/10/20 split for training, validation, and testing.
 The model was trained for 1683 epochs and training was halted by the early stopping mechanism with patience = 3.
 We use emb_dim = 512, 8 heads of attention, 4 stacked layers and a learning rate of 1^-6.
 
-The final acc@1 was 0.10, while acc@5 (whether the picked hero was among the 5 predicted by the model) was 0.35.
+*Results:* The final acc@1 was 0.10, while acc@5 (whether the picked hero was among the 5 predicted by the model) was 0.35.
 
 Not too bad, and beating random by a large margin!
 
