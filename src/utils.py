@@ -74,7 +74,7 @@ class DotaTokenizer:
                 counter += 1
         
         if not alt_vocab:
-            max_idx = max([k for k in vocab.keys()]) # Important: certain heroes are missing from the hero_metadata.json. Some keys have no corresponding heros.
+            max_idx = max([k for k in vocab.keys()]) # Important: certain heroes are missing from the hero_metadata.json. Some keys have no corresponding heroes.
             for i, tk in enumerate(special_tks):
                 vocab.update({i+max_idx+1: tk})
         else:
@@ -83,7 +83,6 @@ class DotaTokenizer:
                 counter += 1
 
         return vocab
-
 
 class Dotaset(Dataset):
     def __init__(self, samples):

@@ -10,15 +10,15 @@ torch.manual_seed(39)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-data_dir = '/Home/siv33/vbo084/DotaPicker/data/processed/'
-model_dir = '/Home/siv33/vbo084/DotaPicker/saved_models/'
+data_dir = '/youdir'
+model_dir = '/youdir'
 
 fnames = ['dota_train_23.pt', 'dota_val_23.pt', 'dota_test_23.pt']
 specnames = ['dota_matches.json']
 
 dset_specs = load_json(os.path.join(data_dir, specnames[0]))
 print(dset_specs)
-VOCAB_LEN = dset_specs['simple_vocab_len'] + 15
+VOCAB_LEN = dset_specs['simple_vocab_len'] + 15 # Unelegant solution to the problem of missing hero keys in the hero.json metadata
 
 config_dict = {'emb_dim': 512,
                'dropout': 0.5,
@@ -32,7 +32,8 @@ config_dict = {'emb_dim': 512,
 
 BATCH_SIZE = 512
 train_dloader, val_dloader, _ = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
-pretrained = torch.load(os.path.join(model_dir, 'heropicker_earlystop_427epcs.pt'))
+
+# pretrained = torch.load(os.path.join(model_dir, 'MODEL_NAME.pt')) # Pass a pretrained model 
 
 def train_causal(traindloader, valdloader, model_pretrained, config_dict, device):
 
@@ -129,5 +130,5 @@ def train_causal(traindloader, valdloader, model_pretrained, config_dict, device
     return model, train_losses, val_losses
 
 print(f'Starting to train HeroPicker.')
-model, tls, vls = train_causal(traindloader=train_dloader, valdloader=val_dloader, model_pretrained=pretrained, config_dict=config_dict, device=device)
+model, tls, vls = train_causal(traindloader=train_dloader, valdloader=val_dloader, model_pretrained=None, config_dict=config_dict, device=device)
 plot_losses(tls, vls)

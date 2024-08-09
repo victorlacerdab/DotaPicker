@@ -28,16 +28,12 @@ saved_models/heropicker_899epcs.pt
 saved_models/heropicker_949epcs.pt
 saved_models/heropicker_999epcs.pt
 data/processed/dota_test_22.pt
-data/processed/dota_test_23.pt
 data/processed/dota_train_22.pt
-data/processed/dota_train_23.pt
 data/processed/dota_val_22.pt
-data/processed/dota_val_23.pt
 saved_models/heropicker_final_23_nonsense.pt
 saved_models/heropicker_final_23.pt
 src/__pycache__/heropicker.cpython-312.pyc
 src/__pycache__/heropicker2.cpython-312.pyc
 data/main_metadata_2022.csv
 data/picks_bans_2022.csv
-data/processed/dota_matches.json
-data/processed/dota_matches.json
+

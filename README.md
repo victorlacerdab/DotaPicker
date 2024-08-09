@@ -6,13 +6,7 @@ HeroPicker is a decoder-only Transformers model designed to answer the following
 
 We cast the question as a next-token prediction problem using masked self-attention, where each hero is represented as a token in a vocabulary.
 
-<p align="center">
-  <img src="heropicker.png" alt="Heropicker.">
-  <br>
-  <b>The problem lends itself to being a next token prediction problem.</b>
-</p>
-
-Just for fun, the model also tries to predict which team (Radiant or Dire) won the match just by looking at the final picks and bans.
+Just for fun, the model also tries to predict which team (Radiant or Dire) won the match by looking at the final state of picks and bans.
 
 # The data
 
@@ -22,15 +16,31 @@ Pro teams try to get ahead by studying possible team compositions based on these
 
 Since the order of picks and bans in Captain's mode is fixed, and we append a token to indicate which team won at the end of the match, our samples consist of sequences containing exactly 25 tokens[^2].
 
-# Results and discussion
+<p align="center">
+  <img src="heropicker.png" alt="Heropicker.">
+  <br>
+  <b>A graphical representation of a partial sample.</b>
+</p>
+
+# Results of the proof of concept and discussion
 
 We adopt a 70/10/20 split for training, validation, and testing.
 
+The model was trained for 1683 epochs and training was halted by the early stopping mechanism with patience = 3.
+We use emb_dim = 512, 8 heads of attention, 4 stacked layers and a learning rate of 1^-6.
 
+The final acc@1 was 0.10, while acc@5 (whether the picked hero was among the 5 predicted by the model) was 0.35.
 
+Not too bad, and beating random by a large margin!
+
+The accuracy on the winning team was 0.52, somewhat above the baseline of picking which side won the most, but this could have other explanations other than the model's having learned something.
+This was a very hard task, specially when the model was trained on only about 20k samples, and in a distribution of pro players.
+
+Since this is only a proof of concept, there are some ways to improve performance.
 A natural extension to training a more robust model would be to include special tokens indicating what is the role of the picked/banned heroes in question.
 For example, instead of passing simply '\[Magina\]', '\[WitchDoctor\]', '\[Mirana\]', one could pass '\[CARRY\]', '\[Magina\]', '\[SUPPORT\]', '\[WitchDoctor\]', '\[MID\]''\[Zeus\]' to the model,
 which could help the model narrow down its choices even further (as we would expect it to learn that no team is composed only of carry heroes, etc).
+
 
 # Bring your own data
 
