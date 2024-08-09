@@ -20,42 +20,45 @@ dset_specs = load_json(os.path.join(data_dir, specnames[0]))
 print(dset_specs)
 VOCAB_LEN = dset_specs['simple_vocab_len'] + 15
 
-config_dict = {'emb_dim': 1024,
-               'dropout': 0.1,
+config_dict = {'emb_dim': 512,
+               'dropout': 0.5,
                'vocab_len': VOCAB_LEN,
                'num_heads': 8,
-               'num_dec_layers': 8,
-               'dim_ff': 2048,
-               'epochs': 5000,
-               'lr': 0.0000001
+               'num_dec_layers': 4,
+               'dim_ff': 1024,
+               'epochs': 1000,
+               'lr': 0.000001
                }
 
-BATCH_SIZE = 1024
-train_dloader, val_dloader, test_dloader = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
+BATCH_SIZE = 512
+train_dloader, val_dloader, _ = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
+pretrained = torch.load(os.path.join(model_dir, 'heropicker_earlystop_427epcs.pt'))
 
-def train_causal(traindloader, valdloader, config_dict, device):
+def train_causal(traindloader, valdloader, model_pretrained, config_dict, device):
 
     epochs = config_dict['epochs']
-    model = HeroPicker(vocab_len=config_dict['vocab_len'], emb_dim=config_dict['emb_dim'],
-                       num_heads=config_dict['num_heads'], dim_ff=config_dict['dim_ff'],
-                       dropout_rate=config_dict['dropout'], num_decod_layers=config_dict['num_dec_layers'],
-                       device=device
-                       )
-    
+
+    if model_pretrained == None:
+        model = HeroPicker(vocab_len=config_dict['vocab_len'], emb_dim=config_dict['emb_dim'],
+                           num_heads=config_dict['num_heads'], dim_ff=config_dict['dim_ff'],
+                           dropout_rate=config_dict['dropout'], num_decod_layers=config_dict['num_dec_layers'],
+                           device=device
+                           )
+    else:
+        model = model_pretrained
+        
     optimizer = torch.optim.Adam(model.parameters(), lr=config_dict['lr'])
     loss_fn = nn.CrossEntropyLoss()
-
+    
     train_losses = []
     val_losses = []
     best_val_loss = float('inf')
-    early_stop_counter = 0 
-    patience = 3  
+    early_stop_counter = 0
+    patience = 3
 
     model = model.to(device)
 
-    # Training and validation loop
     for epoch in range(epochs):
-        # Training phase
         model.train()
         total_train_loss = 0
 
@@ -112,7 +115,7 @@ def train_causal(traindloader, valdloader, config_dict, device):
             early_stop_counter += 1  # Increment the counter if validation loss worsens
         
         # Early stopping condition
-        if early_stop_counter >= patience:
+        if early_stop_counter == patience:
             print(f"Validation loss increased for {patience} consecutive epochs. Stopping training.")
             torch.save(model, os.path.join(model_dir, f'heropicker_earlystop_{epoch+1}epcs.pt'))
             break
@@ -126,5 +129,5 @@ def train_causal(traindloader, valdloader, config_dict, device):
     return model, train_losses, val_losses
 
 print(f'Starting to train HeroPicker.')
-model, tls, vls = train_causal(val_dloader, test_dloader, config_dict, device)
+model, tls, vls = train_causal(traindloader=train_dloader, valdloader=val_dloader, model_pretrained=pretrained, config_dict=config_dict, device=device)
 plot_losses(tls, vls)
